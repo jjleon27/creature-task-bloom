@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTaskStore } from "@/store/taskStore";
+import { useCreatureStore } from "@/store/creatureStore";
 
 interface TaskFormProps {
   onClose: () => void;
@@ -20,8 +20,10 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
   const [measurementUnit, setMeasurementUnit] = useState<'hours' | 'exercises' | 'pages' | 'custom'>('hours');
   const [customUnit, setCustomUnit] = useState("");
   const [sharedWith, setSharedWith] = useState("");
+  const [selectedCreatureId, setSelectedCreatureId] = useState("");
 
   const { addTask } = useTaskStore();
+  const { creatures, addTaskToCreature } = useCreatureStore();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +38,7 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
       ? sharedWith.split(',').map(email => email.trim()) 
       : undefined;
 
-    addTask({
+    const newTask = {
       title: title.trim(),
       description: description.trim() || undefined,
       deadline,
@@ -44,7 +46,14 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
       measurementUnit,
       customUnit: measurementUnit === 'custom' ? customUnit.trim() : undefined,
       sharedWith: sharedWithArray,
-    });
+    };
+
+    const task = addTask(newTask);
+
+    // Associate task with creature if selected
+    if (selectedCreatureId && task) {
+      addTaskToCreature(selectedCreatureId, task.id);
+    }
 
     onClose();
   };
@@ -152,6 +161,30 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
             />
           </div>
         )}
+
+        {/* Creature Selection */}
+        <div>
+          <Label htmlFor="creature">Assign to Creature (Optional)</Label>
+          <Select value={selectedCreatureId} onValueChange={setSelectedCreatureId}>
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Choose a creature to help with this task" />
+            </SelectTrigger>
+            <SelectContent>
+              {creatures.map((creature) => (
+                <SelectItem key={creature.id} value={creature.id}>
+                  <div className="flex items-center gap-2">
+                    <span>{creature.appearance.emoji}</span>
+                    <span>{creature.name}</span>
+                    <span className="text-xs text-gray-500">Lv.{creature.level}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            Your creature will gain experience when you complete this task
+          </p>
+        </div>
 
         <div>
           <Label htmlFor="sharedWith">Share with Friends</Label>

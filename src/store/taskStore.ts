@@ -32,7 +32,7 @@ interface TaskStore {
   virtualCurrency: number;
   creatureHealth: number;
   creatureLevel: number;
-  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'isCompleted' | 'currentProgress'>) => void;
+  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'isCompleted' | 'currentProgress'>) => Task;
   updateTaskProgress: (taskId: string, progress: number) => void;
   completeTask: (taskId: string) => void;
   startFocusSession: (taskId: string, duration: number, collaborators?: string[]) => void;
@@ -60,6 +60,7 @@ export const useTaskStore = create<TaskStore>()(
           currentProgress: 0,
         };
         set((state) => ({ tasks: [...state.tasks, newTask] }));
+        return newTask;
       },
 
       updateTaskProgress: (taskId, progress) => {
