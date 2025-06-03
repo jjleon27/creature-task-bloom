@@ -26,7 +26,9 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !deadline || completionGoal <= 0) {
+    // More robust validation
+    if (!title.trim() || !deadline || !completionGoal || completionGoal <= 0) {
+      console.log("Validation failed:", { title, deadline, completionGoal });
       return;
     }
 
@@ -35,16 +37,28 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
       : undefined;
 
     addTask({
-      title,
-      description: description || undefined,
+      title: title.trim(),
+      description: description.trim() || undefined,
       deadline,
-      completionGoal,
+      completionGoal: Number(completionGoal),
       measurementUnit,
-      customUnit: measurementUnit === 'custom' ? customUnit : undefined,
+      customUnit: measurementUnit === 'custom' ? customUnit.trim() : undefined,
       sharedWith: sharedWithArray,
     });
 
     onClose();
+  };
+
+  const handleCompletionGoalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setCompletionGoal(0);
+    } else {
+      const numValue = Number(value);
+      if (!isNaN(numValue) && numValue > 0) {
+        setCompletionGoal(numValue);
+      }
+    }
   };
 
   return (
@@ -115,12 +129,13 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
             <Input
               id="completionGoal"
               type="number"
-              value={completionGoal}
-              onChange={(e) => setCompletionGoal(Number(e.target.value))}
-              min={0.1}
+              value={completionGoal || ''}
+              onChange={handleCompletionGoalChange}
+              min={measurementUnit === 'hours' ? 0.1 : 1}
               step={measurementUnit === 'hours' ? 0.5 : 1}
               required
               className="mt-1"
+              placeholder="Enter amount needed"
             />
           </div>
         </div>
