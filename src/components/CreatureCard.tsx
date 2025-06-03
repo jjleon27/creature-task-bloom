@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Creature } from "@/store/creatureStore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -12,14 +13,17 @@ interface CreatureCardProps {
 }
 
 export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardProps) => {
+  const [isPressed, setIsPressed] = useState(false);
+  const [showReaction, setShowReaction] = useState(false);
+
   const getEvolutionEmoji = () => {
     const baseEmoji = creature.appearance.emoji;
     switch (creature.evolutionStage) {
-      case 'baby': return `🥚${baseEmoji}`;
-      case 'child': return `🐣${baseEmoji}`;
-      case 'teen': return `🐤${baseEmoji}`;
-      case 'adult': return `🦅${baseEmoji}`;
-      case 'elder': return `👑${baseEmoji}`;
+      case 'baby': return baseEmoji;
+      case 'child': return `✨${baseEmoji}`;
+      case 'teen': return `⚡${baseEmoji}`;
+      case 'adult': return `👑${baseEmoji}`;
+      case 'elder': return `🌟${baseEmoji}`;
       default: return baseEmoji;
     }
   };
@@ -39,6 +43,20 @@ export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardPro
     return '😢';
   };
 
+  const getReactionEmoji = () => {
+    const reactions = ['💖', '✨', '🎉', '🌟', '💫'];
+    return reactions[Math.floor(Math.random() * reactions.length)];
+  };
+
+  const handleCreaturePress = () => {
+    setIsPressed(true);
+    setShowReaction(true);
+    setTimeout(() => {
+      setIsPressed(false);
+      setShowReaction(false);
+    }, 1000);
+  };
+
   const healthStatus = getHealthStatus();
   const experienceToNext = (creature.level * 100) - creature.experience;
 
@@ -46,19 +64,37 @@ export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardPro
     <Card 
       className={`cursor-pointer transition-all hover:shadow-lg ${
         isSelected ? 'ring-2 ring-blue-500 shadow-lg' : ''
-      }`}
+      } ${isPressed ? 'scale-95' : ''}`}
       onClick={onSelect}
       style={{ backgroundColor: `${creature.appearance.baseColor}10` }}
     >
       <CardContent className="p-4">
         {/* Creature Visual */}
-        <div className="text-center mb-4">
-          <div className="text-6xl mb-2 relative">
+        <div className="text-center mb-4 relative">
+          <div 
+            className={`text-6xl mb-2 relative cursor-pointer transition-transform ${
+              isPressed ? 'animate-bounce' : 'hover:scale-110'
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCreaturePress();
+            }}
+          >
             {getEvolutionEmoji()}
-            <span className="absolute -top-1 -right-1 text-lg">
+            <span className="absolute -top-1 -right-1 text-lg animate-pulse">
               {getHappinessEmoji()}
             </span>
+            
+            {/* Reaction overlay */}
+            {showReaction && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-3xl animate-ping">
+                  {getReactionEmoji()}
+                </span>
+              </div>
+            )}
           </div>
+          
           <h3 className="font-semibold text-gray-800">{creature.name}</h3>
           <Badge variant="secondary" className="text-xs">
             Level {creature.level} {creature.evolutionStage}
@@ -110,7 +146,7 @@ export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardPro
 
         {/* Injuries */}
         {creature.injuries.length > 0 && (
-          <div className="mt-3 p-2 bg-red-50 rounded-lg">
+          <div className="mt-3 p-2 bg-red-50 rounded-lg animate-pulse">
             <div className="flex items-center gap-1 mb-1">
               <Bandage size={12} className="text-red-600" />
               <span className="text-xs font-medium text-red-700">Injuries</span>

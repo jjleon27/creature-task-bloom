@@ -37,13 +37,16 @@ interface CreatureStore {
 
 const generateCreatureAppearance = (category: string) => {
   const categoryMap: Record<string, { emoji: string; baseColor: string; secondaryColor: string; traits: string[] }> = {
-    music: { emoji: '🎵', baseColor: '#9333ea', secondaryColor: '#c084fc', traits: ['Musical', 'Rhythmic', 'Harmonious'] },
-    study: { emoji: '📚', baseColor: '#2563eb', secondaryColor: '#60a5fa', traits: ['Wise', 'Focused', 'Analytical'] },
-    fitness: { emoji: '💪', baseColor: '#dc2626', secondaryColor: '#f87171', traits: ['Strong', 'Energetic', 'Healthy'] },
-    art: { emoji: '🎨', baseColor: '#ea580c', secondaryColor: '#fb923c', traits: ['Creative', 'Colorful', 'Imaginative'] },
-    cooking: { emoji: '🍳', baseColor: '#ca8a04', secondaryColor: '#facc15', traits: ['Tasty', 'Nurturing', 'Flavorful'] },
-    reading: { emoji: '📖', baseColor: '#059669', secondaryColor: '#34d399', traits: ['Literary', 'Thoughtful', 'Curious'] },
-    gaming: { emoji: '🎮', baseColor: '#7c3aed', secondaryColor: '#a78bfa', traits: ['Playful', 'Strategic', 'Quick'] },
+    music: { emoji: '🎤', baseColor: '#9333ea', secondaryColor: '#c084fc', traits: ['Musical', 'Rhythmic', 'Harmonious'] },
+    study: { emoji: '🦉', baseColor: '#2563eb', secondaryColor: '#60a5fa', traits: ['Wise', 'Focused', 'Analytical'] },
+    fitness: { emoji: '🐯', baseColor: '#dc2626', secondaryColor: '#f87171', traits: ['Strong', 'Energetic', 'Healthy'] },
+    art: { emoji: '🦋', baseColor: '#ea580c', secondaryColor: '#fb923c', traits: ['Creative', 'Colorful', 'Imaginative'] },
+    cooking: { emoji: '🐻', baseColor: '#ca8a04', secondaryColor: '#facc15', traits: ['Tasty', 'Nurturing', 'Flavorful'] },
+    reading: { emoji: '🐙', baseColor: '#059669', secondaryColor: '#34d399', traits: ['Literary', 'Thoughtful', 'Curious'] },
+    gaming: { emoji: '🦊', baseColor: '#7c3aed', secondaryColor: '#a78bfa', traits: ['Playful', 'Strategic', 'Quick'] },
+    language: { emoji: '🦜', baseColor: '#059669', secondaryColor: '#34d399', traits: ['Communicative', 'Expressive', 'Social'] },
+    coding: { emoji: '🤖', baseColor: '#1f2937', secondaryColor: '#6b7280', traits: ['Logical', 'Precise', 'Innovative'] },
+    garden: { emoji: '🐰', baseColor: '#16a34a', secondaryColor: '#4ade80', traits: ['Patient', 'Growing', 'Natural'] },
     default: { emoji: '🐾', baseColor: '#6b7280', secondaryColor: '#9ca3af', traits: ['Loyal', 'Friendly', 'Adaptable'] }
   };
 

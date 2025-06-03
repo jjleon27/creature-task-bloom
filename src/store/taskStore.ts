@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -33,6 +32,8 @@ interface TaskStore {
   creatureHealth: number;
   creatureLevel: number;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'isCompleted' | 'currentProgress'>) => Task;
+  updateTask: (taskId: string, updates: Partial<Task>) => Task | null;
+  deleteTask: (taskId: string) => void;
   updateTaskProgress: (taskId: string, progress: number) => void;
   completeTask: (taskId: string) => void;
   startFocusSession: (taskId: string, duration: number, collaborators?: string[]) => void;
@@ -61,6 +62,27 @@ export const useTaskStore = create<TaskStore>()(
         };
         set((state) => ({ tasks: [...state.tasks, newTask] }));
         return newTask;
+      },
+
+      updateTask: (taskId, updates) => {
+        let updatedTask: Task | null = null;
+        set((state) => ({
+          tasks: state.tasks.map((task) => {
+            if (task.id === taskId) {
+              updatedTask = { ...task, ...updates };
+              return updatedTask;
+            }
+            return task;
+          }),
+        }));
+        return updatedTask;
+      },
+
+      deleteTask: (taskId) => {
+        set((state) => ({
+          tasks: state.tasks.filter((task) => task.id !== taskId),
+          focusSessions: state.focusSessions.filter((session) => session.taskId !== taskId),
+        }));
       },
 
       updateTaskProgress: (taskId, progress) => {

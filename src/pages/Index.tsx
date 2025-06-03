@@ -4,15 +4,29 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { FriendsButton } from "@/components/FriendsButton";
 import { RewardsButton } from "@/components/RewardsButton";
 import { TaskCard } from "@/components/TaskCard";
+import { TaskForm } from "@/components/TaskForm";
 import { useTaskStore } from "@/store/taskStore";
 
 const Index = () => {
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
   const { tasks } = useTaskStore();
+  
   const todayTasks = tasks.filter(task => {
     const today = new Date();
     const taskDate = new Date(task.deadline);
     return taskDate.toDateString() === today.toDateString();
   });
+
+  const handleEditTask = (task: any) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowTaskForm(false);
+    setEditingTask(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
@@ -25,6 +39,13 @@ const Index = () => {
         <h1 className="text-3xl font-bold text-gray-800 mb-2">My Tasks</h1>
         <p className="text-gray-600 mb-8">Stay productive and help your creature grow!</p>
         
+        {showTaskForm && (
+          <TaskForm 
+            onClose={handleCloseForm}
+            editTask={editingTask}
+          />
+        )}
+
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">Today</h2>
           {todayTasks.length === 0 ? (
@@ -34,7 +55,11 @@ const Index = () => {
           ) : (
             <div className="space-y-4">
               {todayTasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onEdit={handleEditTask}
+                />
               ))}
             </div>
           )}
@@ -49,7 +74,11 @@ const Index = () => {
           ) : (
             <div className="space-y-4">
               {tasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onEdit={handleEditTask}
+                />
               ))}
             </div>
           )}

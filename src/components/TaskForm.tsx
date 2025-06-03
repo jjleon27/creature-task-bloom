@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,28 +8,44 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTaskStore } from "@/store/taskStore";
 import { useCreatureStore } from "@/store/creatureStore";
+import { Badge } from "@/components/ui/badge";
 
 interface TaskFormProps {
   onClose: () => void;
+  editTask?: any;
 }
 
-export const TaskForm = ({ onClose }: TaskFormProps) => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [deadline, setDeadline] = useState("");
-  const [completionGoal, setCompletionGoal] = useState<number>(1);
-  const [measurementUnit, setMeasurementUnit] = useState<'hours' | 'exercises' | 'pages' | 'custom'>('hours');
-  const [customUnit, setCustomUnit] = useState("");
-  const [sharedWith, setSharedWith] = useState("");
-  const [selectedCreatureId, setSelectedCreatureId] = useState("");
+export const TaskForm = ({ onClose, editTask }: TaskFormProps) => {
+  const [title, setTitle] = useState(editTask?.title || "");
+  const [description, setDescription] = useState(editTask?.description || "");
+  const [deadline, setDeadline] = useState(editTask?.deadline || "");
+  const [completionGoal, setCompletionGoal] = useState<number>(editTask?.completionGoal || 1);
+  const [measurementUnit, setMeasurementUnit] = useState<'hours' | 'exercises' | 'pages' | 'custom'>(editTask?.measurementUnit || 'hours');
+  const [customUnit, setCustomUnit] = useState(editTask?.customUnit || "");
+  const [sharedWith, setSharedWith] = useState(editTask?.sharedWith?.join(', ') || "");
+  const [selectedCreatureId, setSelectedCreatureId] = useState(editTask?.associatedCreatureId || "");
+  const [createNewCreature, setCreateNewCreature] = useState(false);
+  const [newCreatureCategory, setNewCreatureCategory] = useState("");
 
-  const { addTask } = useTaskStore();
-  const { creatures, addTaskToCreature } = useCreatureStore();
+  const { addTask, updateTask } = useTaskStore();
+  const { creatures, addTaskToCreature, createCreature } = useCreatureStore();
+
+  const categories = [
+    { value: 'music', label: 'Music', emoji: '🎵' },
+    { value: 'study', label: 'Study', emoji: '📚' },
+    { value: 'fitness', label: 'Fitness', emoji: '💪' },
+    { value: 'art', label: 'Art', emoji: '🎨' },
+    { value: 'cooking', label: 'Cooking', emoji: '🍳' },
+    { value: 'reading', label: 'Reading', emoji: '📖' },
+    { value: 'gaming', label: 'Gaming', emoji: '🎮' },
+    { value: 'language', label: 'Language', emoji: '🗣️' },
+    { value: 'coding', label: 'Coding', emoji: '💻' },
+    { value: 'garden', label: 'Gardening', emoji: '🌱' },
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // More robust validation
     if (!title.trim() || !deadline || !completionGoal || completionGoal <= 0) {
       console.log("Validation failed:", { title, deadline, completionGoal });
       return;
@@ -38,7 +55,7 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
       ? sharedWith.split(',').map(email => email.trim()) 
       : undefined;
 
-    const newTask = {
+    const taskData = {
       title: title.trim(),
       description: description.trim() || undefined,
       deadline,
@@ -48,11 +65,20 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
       sharedWith: sharedWithArray,
     };
 
-    const task = addTask(newTask);
+    let task;
+    if (editTask) {
+      task = updateTask(editTask.id, taskData);
+    } else {
+      task = addTask(taskData);
+    }
 
-    // Associate task with creature if selected
-    if (selectedCreatureId && task) {
-      addTaskToCreature(selectedCreatureId, task.id);
+    // Handle creature association
+    if (task) {
+      if (createNewCreature && newCreatureCategory) {
+        const creature = createCreature(newCreatureCategory, task.id);
+      } else if (selectedCreatureId) {
+        addTaskToCreature(selectedCreatureId, task.id);
+      }
     }
 
     onClose();
@@ -73,7 +99,9 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 mb-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Create New Task</h2>
+        <h2 className="text-xl font-semibold">
+          {editTask ? 'Edit Task' : 'Create New Task'}
+        </h2>
         <Button variant="ghost" size="sm" onClick={onClose}>
           <X size={20} />
         </Button>
@@ -162,28 +190,71 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
           </div>
         )}
 
-        {/* Creature Selection */}
-        <div>
-          <Label htmlFor="creature">Assign to Creature (Optional)</Label>
-          <Select value={selectedCreatureId} onValueChange={setSelectedCreatureId}>
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Choose a creature to help with this task" />
-            </SelectTrigger>
-            <SelectContent>
-              {creatures.map((creature) => (
-                <SelectItem key={creature.id} value={creature.id}>
-                  <div className="flex items-center gap-2">
-                    <span>{creature.appearance.emoji}</span>
-                    <span>{creature.name}</span>
-                    <span className="text-xs text-gray-500">Lv.{creature.level}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-gray-500 mt-1">
-            Your creature will gain experience when you complete this task
-          </p>
+        {/* Creature Assignment */}
+        <div className="space-y-4">
+          <Label>Creature Assignment</Label>
+          
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant={!createNewCreature ? "default" : "outline"}
+              onClick={() => setCreateNewCreature(false)}
+              className="flex-1"
+            >
+              Use Existing Creature
+            </Button>
+            <Button
+              type="button"
+              variant={createNewCreature ? "default" : "outline"}
+              onClick={() => setCreateNewCreature(true)}
+              className="flex-1"
+            >
+              Create New Creature
+            </Button>
+          </div>
+
+          {createNewCreature ? (
+            <div>
+              <Label htmlFor="category">New Creature Type</Label>
+              <Select value={newCreatureCategory} onValueChange={setNewCreatureCategory}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Choose creature type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{cat.emoji}</span>
+                        <span>{cat.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="creature">Select Existing Creature</Label>
+              <Select value={selectedCreatureId} onValueChange={setSelectedCreatureId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Choose a creature" />
+                </SelectTrigger>
+                <SelectContent>
+                  {creatures.map((creature) => (
+                    <SelectItem key={creature.id} value={creature.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{creature.appearance.emoji}</span>
+                        <span>{creature.name}</span>
+                        <Badge variant="secondary" className="text-xs">
+                          Lv.{creature.level}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         <div>
@@ -202,7 +273,7 @@ export const TaskForm = ({ onClose }: TaskFormProps) => {
 
         <div className="flex gap-3">
           <Button type="submit" className="flex-1">
-            Create Task
+            {editTask ? 'Update Task' : 'Create Task'}
           </Button>
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
