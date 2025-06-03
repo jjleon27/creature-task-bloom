@@ -16,15 +16,14 @@ export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardPro
   const [isPressed, setIsPressed] = useState(false);
   const [showReaction, setShowReaction] = useState(false);
 
-  const getEvolutionEmoji = () => {
-    const baseEmoji = creature.appearance.emoji;
+  const getEvolutionPrefix = () => {
     switch (creature.evolutionStage) {
-      case 'baby': return baseEmoji;
-      case 'child': return `✨${baseEmoji}`;
-      case 'teen': return `⚡${baseEmoji}`;
-      case 'adult': return `👑${baseEmoji}`;
-      case 'elder': return `🌟${baseEmoji}`;
-      default: return baseEmoji;
+      case 'baby': return 'Baby';
+      case 'child': return 'Young';
+      case 'teen': return 'Teen';
+      case 'adult': return 'Adult';
+      case 'elder': return 'Elder';
+      default: return '';
     }
   };
 
@@ -44,7 +43,7 @@ export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardPro
   };
 
   const getReactionEmoji = () => {
-    const reactions = ['💖', '✨', '🎉', '🌟', '💫'];
+    const reactions = ['💖', '✨', '🎉', '🌟', '💫', '❤️', '🥰'];
     return reactions[Math.floor(Math.random() * reactions.length)];
   };
 
@@ -72,7 +71,7 @@ export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardPro
         {/* Creature Visual */}
         <div className="text-center mb-4 relative">
           <div 
-            className={`text-6xl mb-2 relative cursor-pointer transition-transform ${
+            className={`mb-3 relative cursor-pointer transition-transform ${
               isPressed ? 'animate-bounce' : 'hover:scale-110'
             }`}
             onClick={(e) => {
@@ -80,8 +79,41 @@ export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardPro
               handleCreaturePress();
             }}
           >
-            {getEvolutionEmoji()}
-            <span className="absolute -top-1 -right-1 text-lg animate-pulse">
+            {/* Creature Visual Representation */}
+            <div 
+              className="w-20 h-20 mx-auto rounded-full border-4 border-white shadow-lg flex items-center justify-center text-2xl font-bold relative overflow-hidden"
+              style={{ 
+                background: `linear-gradient(135deg, ${creature.appearance.baseColor}, ${creature.appearance.secondaryColor})`,
+                color: 'white'
+              }}
+            >
+              {/* Simple creature representation */}
+              <div className="relative">
+                {creature.appearance.animalType.includes('Bunny') && '🐰'}
+                {creature.appearance.animalType.includes('Owl') && '🦉'}
+                {creature.appearance.animalType.includes('Tiger') && '🐯'}
+                {creature.appearance.animalType.includes('Chameleon') && '🦎'}
+                {creature.appearance.animalType.includes('Bear') && '🐻'}
+                {creature.appearance.animalType.includes('Octopus') && '🐙'}
+                {creature.appearance.animalType.includes('Fox') && '🦊'}
+                {creature.appearance.animalType.includes('Parrot') && '🦜'}
+                {creature.appearance.animalType.includes('Raccoon') && '🦝'}
+                {creature.appearance.animalType.includes('Rabbit') && '🐰'}
+                {creature.appearance.animalType.includes('Dog') && '🐕'}
+              </div>
+              
+              {/* Evolution stage indicator */}
+              <div className="absolute -top-1 -right-1 text-xs">
+                {creature.evolutionStage === 'baby' && '👶'}
+                {creature.evolutionStage === 'child' && '✨'}
+                {creature.evolutionStage === 'teen' && '⚡'}
+                {creature.evolutionStage === 'adult' && '👑'}
+                {creature.evolutionStage === 'elder' && '🌟'}
+              </div>
+            </div>
+            
+            {/* Happiness indicator */}
+            <span className="absolute -top-2 -right-2 text-lg animate-pulse">
               {getHappinessEmoji()}
             </span>
             
@@ -95,10 +127,29 @@ export const CreatureCard = ({ creature, onSelect, isSelected }: CreatureCardPro
             )}
           </div>
           
-          <h3 className="font-semibold text-gray-800">{creature.name}</h3>
-          <Badge variant="secondary" className="text-xs">
-            Level {creature.level} {creature.evolutionStage}
+          <h3 className="font-semibold text-gray-800 text-sm">
+            {getEvolutionPrefix()} {creature.appearance.animalType}
+          </h3>
+          <Badge variant="secondary" className="text-xs mt-1">
+            Level {creature.level}
           </Badge>
+        </div>
+
+        {/* Creature Description */}
+        <div className="mb-4 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg">
+          <p>{creature.appearance.description}</p>
+        </div>
+
+        {/* Accessories */}
+        <div className="mb-3">
+          <div className="text-xs font-medium text-gray-700 mb-1">Accessories:</div>
+          <div className="flex flex-wrap gap-1">
+            {creature.appearance.accessories.map((accessory, index) => (
+              <span key={index} className="text-xs bg-blue-50 text-blue-700 px-1 py-0.5 rounded">
+                {accessory}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Stats */}
